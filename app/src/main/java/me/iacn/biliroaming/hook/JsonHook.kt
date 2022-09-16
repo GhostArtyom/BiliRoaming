@@ -85,6 +85,70 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         }
                     }
 
+                    // 在底栏添加历史记录按钮
+                    if (sPrefs.getBoolean("add_history", false)) {
+                        val bottom = data?.getObjectFieldAs<MutableList<Any>>("bottom")
+                        val hasHistory = bottom?.fold(false) { acc, it ->
+                            val uri = it.getObjectFieldAs<String?>("uri")
+                            acc || uri?.startsWith("bilibili://history") == true
+                        }
+                        // 不存在历史记录按钮时才添加
+                        if (hasHistory != null && !hasHistory) {
+                            tabClass?.new()?.run {
+                                setObjectField("tabId", "123")
+                                setObjectField("name", "历史记录")
+                                setObjectField(
+                                    "icon",
+                                    "imgs/ic_mine_history.png"
+                                )
+                                setObjectField(
+                                    "iconSelected",
+                                    "imgs/ic_mine_history.png"
+                                )
+                                setObjectField("uri", "bilibili://history")
+                                setObjectField("reportId", "历史记录")
+                                val pos = 2
+                                setIntField("pos", pos)
+                                bottom.forEach {
+                                    it.setIntField("pos", it.getIntField("pos").let { p -> p + if (p >= pos) 1 else 0 } )
+                                }
+                                bottom.add(0, this)
+                            }
+                        }
+                    }
+
+                    // 在底栏添加稍后再看按钮
+                    if (sPrefs.getBoolean("add_watchlater", false)) {
+                        val bottom = data?.getObjectFieldAs<MutableList<Any>>("bottom")
+                        val hasWatchlater = bottom?.fold(false) { acc, it ->
+                            val uri = it.getObjectFieldAs<String?>("uri")
+                            acc || uri?.startsWith("bilibili://main/playset/watch-later") == true
+                        }
+                        // 不存在稍后再看按钮时才添加
+                        if (hasWatchlater != null && !hasWatchlater) {
+                            tabClass?.new()?.run {
+                                setObjectField("tabId", "234")
+                                setObjectField("name", "稍后再看")
+                                setObjectField(
+                                    "icon",
+                                    "imgs/ic_mine_watchlater.png"
+                                )
+                                setObjectField(
+                                    "iconSelected",
+                                    "imgs/ic_mine_watchlater.png"
+                                )
+                                setObjectField("uri", "bilibili://main/playset/watch-later")
+                                setObjectField("reportId", "稍后再看")
+                                val pos = 4
+                                setIntField("pos", pos)
+                                bottom.forEach {
+                                    it.setIntField("pos", it.getIntField("pos").let { p -> p + if (p >= pos) 1 else 0 } )
+                                }
+                                bottom.add(0, this)
+                            }
+                        }
+                    }
+
                     // 在首页标签添加大陆/港澳台番剧分页
                     if (sPrefs.getBoolean("add_bangumi", false)) {
                         val tab = data?.getObjectFieldAs<MutableList<Any>>("tab")
