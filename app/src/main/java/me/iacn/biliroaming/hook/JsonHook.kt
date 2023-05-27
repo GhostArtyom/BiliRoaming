@@ -123,11 +123,11 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "历史记录")
                                 setObjectField(
                                     "icon",
-                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_mine_history.png"
+                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_share_menu_favorite.png"
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_mine_watchlater.png"
+                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_share_menu_favorited.png"
                                 )
                                 setObjectField("uri", "bilibili://history")
                                 setObjectField("reportId", "历史记录")
@@ -154,11 +154,11 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "稍后再看")
                                 setObjectField(
                                     "icon",
-                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_promo_index_watch_later.png"
+                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_mine_watchlater.png"
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_following_watch_later.png"
+                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_mine_watchlater.png"
                                 )
                                 setObjectField("uri", "bilibili://main/playset/watch-later")
                                 setObjectField("reportId", "稍后再看")
