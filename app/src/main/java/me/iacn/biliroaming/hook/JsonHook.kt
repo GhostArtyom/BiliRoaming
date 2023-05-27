@@ -127,7 +127,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    "drawable/ic_mine_watchlater.ico"
+                                    "drawable/ic_mine_watchlater"
                                 )
                                 setObjectField("uri", "bilibili://history")
                                 setObjectField("reportId", "历史记录")
