@@ -154,7 +154,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "稍后再看")
                                 setObjectField(
                                     "icon",
-                                    "@drawable/ic_following_watch_later .png"
+                                    "@drawable/ic_following_watch_later.png"
                                 )
                                 setObjectField(
                                     "iconSelected",
