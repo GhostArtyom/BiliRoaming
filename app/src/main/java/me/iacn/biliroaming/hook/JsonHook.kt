@@ -123,11 +123,11 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "历史记录")
                                 setObjectField(
                                     "icon",
-                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_share_menu_favorite.png"
+                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_mine_history.png"
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_share_menu_favorited.png"
+                                    "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/ic_mine_history.png"
                                 )
                                 setObjectField("uri", "bilibili://history")
                                 setObjectField("reportId", "历史记录")
