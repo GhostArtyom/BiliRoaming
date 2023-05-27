@@ -123,11 +123,11 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "历史记录")
                                 setObjectField(
                                     "icon",
-                                    "@ic_mine_history"
+                                    "drawable/ic_mine_history"
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    "@ic_mine_watchlater.png"
+                                    "drawable/ic_mine_watchlater.png"
                                 )
                                 setObjectField("uri", "bilibili://history")
                                 setObjectField("reportId", "历史记录")
@@ -154,11 +154,11 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "稍后再看")
                                 setObjectField(
                                     "icon",
-                                    "@drawable/ic_promo_index_watch_later.png"
+                                    "drawable/demo.webp"
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    "@drawable/ic_promo_index_watch_later"
+                                    "drawable/demo"
                                 )
                                 setObjectField("uri", "bilibili://main/playset/watch-later")
                                 setObjectField("reportId", "稍后再看")
