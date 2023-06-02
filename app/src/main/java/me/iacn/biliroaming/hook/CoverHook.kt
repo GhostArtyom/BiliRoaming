@@ -120,7 +120,7 @@ class CoverHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                     getBitmapFromURL(url) { bitmap ->
                         bitmap?.let {
                             val relativePath =
-                                "${Environment.DIRECTORY_PICTURES}${File.separator}bilibili"
+                                "${Environment.DIRECTORY_PICTURES}${File.separator}bili"
 
                             @Suppress("DEPRECATION")
                             val contentValues = ContentValues().apply {
