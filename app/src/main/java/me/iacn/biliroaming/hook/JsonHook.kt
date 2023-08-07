@@ -146,7 +146,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         val bottom = data?.getObjectFieldAs<MutableList<Any>>("bottom")
                         val hasFavorites = bottom?.fold(false) { acc, it ->
                             val uri = it.getObjectFieldAs<String?>("uri")
-                            acc || uri?.startsWith("bilibili://history") == true
+                            acc || uri?.startsWith("bilibili://main/favorite/playlist") == true
                         }
                         // 不存在我的收藏按钮时才添加
                         if (hasFavorites != null && !hasFavorites) {
@@ -161,9 +161,9 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                     "iconSelected",
                                     url + "ic_mine_favorite.png"
                                 )
-                                setObjectField("uri", "bilibili://history")
+                                setObjectField("uri", "bilibili://main/favorite/playlist")
                                 setObjectField("reportId", "我的收藏")
-                                val pos = 3
+                                val pos = 2
                                 setIntField("pos", pos)
                                 bottom.forEach {
                                     it.setIntField("pos", it.getIntField("pos").let { p -> p + if (p >= pos) 1 else 0 } )
