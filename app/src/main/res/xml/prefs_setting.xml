@@ -310,6 +310,11 @@
             android:title="@string/add_history_title" />
         <SwitchPreference
             android:dependency="hidden"
+            android:key="add_favorites"
+            android:summary="@string/add_favorites_summary"
+            android:title="@string/add_favorites_title" />
+        <SwitchPreference
+            android:dependency="hidden"
             android:key="add_watchlater"
             android:summary="@string/add_watchlater_summary"
             android:title="@string/add_watchlater_title" />
