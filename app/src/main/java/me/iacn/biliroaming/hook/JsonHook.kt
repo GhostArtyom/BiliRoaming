@@ -115,7 +115,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         val bottom = data?.getObjectFieldAs<MutableList<Any>>("bottom")
                         val hasHistory = bottom?.fold(false) { acc, it ->
                             val uri = it.getObjectFieldAs<String?>("uri")
-                            acc || uri?.startsWith("bilibili://main/drawer/history") == true
+                            acc || uri?.startsWith("bilibili://history") == true
                         }
                         // 不存在历史记录按钮时才添加
                         if (hasHistory != null && !hasHistory) {
@@ -130,7 +130,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                     "iconSelected",
                                     url + "ic_mine_history.png"
                                 )
-                                setObjectField("uri", "bilibili://main/drawer/history")
+                                setObjectField("uri", "bilibili://history")
                                 setObjectField("reportId", "历史记录")
                                 val pos = 2
                                 setIntField("pos", pos)
@@ -177,7 +177,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         val bottom = data?.getObjectFieldAs<MutableList<Any>>("bottom")
                         val hasWatchlater = bottom?.fold(false) { acc, it ->
                             val uri = it.getObjectFieldAs<String?>("uri")
-                            acc || uri?.startsWith("bilibili://main/drawer/watch-later") == true
+                            acc || uri?.startsWith("bilibili://main/playset/watch-later") == true
                         }
                         // 不存在稍后再看按钮时才添加
                         if (hasWatchlater != null && !hasWatchlater) {
@@ -192,7 +192,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                     "iconSelected",
                                     url + "ic_mine_watchlater.png"
                                 )
-                                setObjectField("uri", "bilibili://main/drawer/watch-later")
+                                setObjectField("uri", "bilibili://main/playset/watch-later")
                                 setObjectField("reportId", "稍后再看")
                                 val pos = 4
                                 setIntField("pos", pos)
