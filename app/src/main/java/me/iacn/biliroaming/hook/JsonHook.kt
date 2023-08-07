@@ -163,7 +163,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 )
                                 setObjectField("uri", "bilibili://history")
                                 setObjectField("reportId", "我的收藏")
-                                val pos = 2
+                                val pos = 3
                                 setIntField("pos", pos)
                                 bottom.forEach {
                                     it.setIntField("pos", it.getIntField("pos").let { p -> p + if (p >= pos) 1 else 0 } )
