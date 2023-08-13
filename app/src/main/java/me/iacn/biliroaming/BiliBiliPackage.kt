@@ -89,6 +89,7 @@ class BiliBiliPackage constructor(private val mClassLoader: ClassLoader, mContex
     }
     val commentCopyClass by Weak { mHookInfo.commentLongClick from mClassLoader }
     val commentCopyNewClass by Weak { mHookInfo.commentLongClickNew from mClassLoader }
+    val comment3CopyClass by Weak { mHookInfo.comment3Copy.class_ from mClassLoader }
     val kotlinJsonClass by Weak { "kotlinx.serialization.json.Json" from mClassLoader }
     val gsonConverterClass by Weak { mHookInfo.gsonHelper.gsonConverter from mClassLoader }
     val playerCoreServiceV2Class by Weak { mHookInfo.playerCoreService.class_ from mClassLoader }
@@ -151,6 +152,8 @@ class BiliBiliPackage constructor(private val mClassLoader: ClassLoader, mContex
     val playViewUniteReqClass by Weak { "com.bapis.bilibili.app.playerunite.v1.PlayViewUniteReq" from mClassLoader }
     val viewMossClass by Weak { "com.bapis.bilibili.app.view.v1.ViewMoss" from mClassLoader }
     val viewReqClass by Weak { "com.bapis.bilibili.app.view.v1.ViewReq" from mClassLoader }
+    val viewUniteMossClass by Weak { "com.bapis.bilibili.app.viewunite.v1.ViewMoss" from mClassLoader }
+    val viewUniteReqClass by Weak { "com.bapis.bilibili.app.viewunite.v1.ViewReq" from mClassLoader }
     val bkArcPartClass by Weak { "com.bapis.bilibili.app.listener.v1.BKArcPart" from mClassLoader }
     val builtInThemesClass by Weak { mHookInfo.builtInThemes.class_ from mClassLoader }
     val themeColorsConstructor by Weak {
@@ -159,6 +162,7 @@ class BiliBiliPackage constructor(private val mClassLoader: ClassLoader, mContex
     }
     val biliGlobalPreferenceClass by Weak { mHookInfo.biliGlobalPreference.class_ from mClassLoader }
     val dmMossClass by Weak { "com.bapis.bilibili.community.service.dm.v1.DMMoss" from mClassLoader }
+    val dmViewReqClass by Weak { "com.bapis.bilibili.community.service.dm.v1.DmViewReq" from mClassLoader }
     val treePointItemClass by Weak { "com.bilibili.app.comm.list.common.data.ThreePointItem" from mClassLoader }
     val dislikeReasonClass by Weak { "com.bilibili.app.comm.list.common.data.DislikeReason" from mClassLoader }
     val cardClickProcessorClass by Weak { mHookInfo.cardClickProcessor.class_ from mClassLoader }
@@ -253,6 +257,8 @@ class BiliBiliPackage constructor(private val mClassLoader: ClassLoader, mContex
     fun descCopy() = mHookInfo.descCopy.methodsList.map { it.orNull }
 
     fun descCopyView() = mHookInfo.descCopy.classesList.map { it from mClassLoader }
+
+    fun comment3Copy() = mHookInfo.comment3Copy.method.orNull
 
     fun responseDataField() = runCatchingOrNull {
         rxGeneralResponseClass?.getDeclaredField("data")?.name
@@ -1503,8 +1509,8 @@ class BiliBiliPackage constructor(private val mClassLoader: ClassLoader, mContex
             commentSpan = class_ {
                 name = commentSpanClass?.name ?: return@class_
             }
+            val viewIndex = dexHelper.encodeClassIndex(View::class.java)
             commentLongClick = class_ {
-                val viewIndex = dexHelper.encodeClassIndex(View::class.java)
                 val onLongClickListenerIndex = dexHelper.encodeMethodIndex(
                     View::class.java.getDeclaredMethod(
                         "setOnLongClickListener",
@@ -1662,7 +1668,6 @@ class BiliBiliPackage constructor(private val mClassLoader: ClassLoader, mContex
                     null,
                     true
                 ).firstOrNull() ?: return@descCopy
-                val viewIndex = dexHelper.encodeClassIndex(View::class.java)
                 val clickableSpanIndex = dexHelper.encodeClassIndex(ClickableSpan::class.java)
                 dexHelper.findMethodInvoked(
                     toCopyMethodIndex,
@@ -1679,6 +1684,55 @@ class BiliBiliPackage constructor(private val mClassLoader: ClassLoader, mContex
                 }.forEach {
                     classes += class_ { name = it.declaringClass.name }
                     methods += method { name = it.name }
+                }
+                classesList.filter {
+                    it.startsWith("com.bilibili.ship.theseus.ugc.intro.ugcheadline.UgcIntroductionComponent")
+                }.map { it.on(classloader) }.flatMap { c ->
+                    c.declaredMethods.filter {
+                        it.isPublic && it.parameterCount == 2 && it.parameterTypes[0] == View::class.java && it.parameterTypes[1] == ClickableSpan::class.java
+                    }
+                }.forEach {
+                    classes += class_ { name = it.declaringClass.name }
+                    methods += method { name = it.name }
+                }
+            }
+            comment3Copy = comment3Copy {
+                val clipBoardCopyMethod =
+                    "com.bilibili.droid.ClipboardHelper".from(classloader)
+                        ?.getDeclaredMethod("copy", Context::class.java, String::class.java)?.let {
+                            dexHelper.encodeMethodIndex(it)
+                        } ?: return@comment3Copy
+                val commentExtensionsKtClass =
+                    "com.bilibili.app.comment3.utils.CommentExtensionsKt".from(classloader)?.let {
+                        dexHelper.encodeClassIndex(it)
+                    } ?: return@comment3Copy
+                dexHelper.findMethodInvoked(
+                    clipBoardCopyMethod,
+                    -1,
+                    2,
+                    "ZLL",
+                    commentExtensionsKtClass,
+                    null,
+                    null,
+                    null,
+                    true
+                ).firstOrNull()?.let {
+                    dexHelper.findMethodInvoked(
+                        it,
+                        -1,
+                        3,
+                        "ZLLL",
+                        -1,
+                        null,
+                        null,
+                        null,
+                        true
+                    ).firstOrNull()?.let {
+                        dexHelper.decodeMethodIndex(it)
+                    }
+                }?.let {
+                    class_ = class_ { name = it.declaringClass.name }
+                    method = method { name = it.name }
                 }
             }
             dexHelper.findMethodUsingString(

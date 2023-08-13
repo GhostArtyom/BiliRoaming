@@ -4,11 +4,22 @@ import me.iacn.biliroaming.BiliBiliPackage.Companion.instance
 import me.iacn.biliroaming.utils.*
 
 class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
+    companion object {
+        fun Any.removeCmdDms() {
+            callMethod("clearActivityMeta")
+            runCatchingOrNull {
+                callMethod("clearCommand")
+            }
+            setObjectField("unknownFields", instance.unknownFieldSetLiteInstance)
+        }
+    }
 
     private val mainListReplyClass by Weak { "com.bapis.bilibili.main.community.reply.v1.MainListReply" from mClassLoader }
-    private val emptyPageClass by Weak { "com.bapis.bilibili.main.community.reply.v1.EmptyPage" from mClassLoader }
-    private val textClass by Weak { "com.bapis.bilibili.main.community.reply.v1.EmptyPage\$Text" from mClassLoader }
-    private val textStyleClass by Weak { "com.bapis.bilibili.main.community.reply.v1.TextStyle" from mClassLoader }
+    private val emptyPageV1Class by Weak { "com.bapis.bilibili.main.community.reply.v1.EmptyPage" from mClassLoader }
+    private val textV1Class by Weak { "com.bapis.bilibili.main.community.reply.v1.EmptyPage\$Text" from mClassLoader }
+    private val textStyleV1Class by Weak { "com.bapis.bilibili.main.community.reply.v1.TextStyle" from mClassLoader }
+    private val textV2Class by Weak { "com.bapis.bilibili.main.community.reply.v2.EmptyPage\$Text" from mClassLoader }
+    private val textStyleV2Class by Weak { "com.bapis.bilibili.main.community.reply.v2.TextStyle" from mClassLoader }
     private val videoGuideClass by Weak { "com.bapis.bilibili.app.view.v1.VideoGuide" from mClassLoader }
 
     override fun startHook() {
@@ -28,6 +39,7 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val unlockPlayLimit = sPrefs.getBoolean("play_arc_conf", false)
         val blockCommentGuide = sPrefs.getBoolean("block_comment_guide", false)
         val blockVideoComment = sPrefs.getBoolean("block_video_comment", false)
+        val blockViewPageAds = sPrefs.getBoolean("block_view_page_ads", false)
 
         if (hidden && (purifyCity || purifyCampus)) {
             listOf(
@@ -87,7 +99,7 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             ) { param ->
                 param.result?.callMethod("setVideoGuide", videoGuideClass?.new())
             }
-            "com.bapis.bilibili.app.viewunite.v1.ViewMoss".from(mClassLoader)?.hookAfterMethod(
+            instance.viewUniteMossClass?.hookAfterMethod(
                 "viewProgress",
                 "com.bapis.bilibili.app.viewunite.v1.ViewProgressReq"
             ) { param ->
@@ -100,16 +112,8 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 "tFInfo", "com.bapis.bilibili.app.view.v1.TFInfoReq"
             ) { null }
             instance.dmMossClass?.hookAfterMethod(
-                "dmView", "com.bapis.bilibili.community.service.dm.v1.DmViewReq",
-            ) {
-                it.result?.run {
-                    callMethod("clearActivityMeta")
-                    runCatchingOrNull {
-                        callMethod("clearCommand")
-                    }
-                    setObjectField("unknownFields", instance.unknownFieldSetLiteInstance)
-                }
-            }
+                "dmView", instance.dmViewReqClass,
+            ) { it.result?.removeCmdDms() }
         }
         if (hidden && purifySearch) {
             "com.bapis.bilibili.app.interfaces.v1.SearchMoss".hookAfterMethod(
@@ -179,16 +183,16 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 if (hidden && blockVideoComment && type == 1L) {
                     val reply = mainListReplyClass?.new()?.apply {
                         val subjectControl = callMethod("getSubjectControl")
-                        val emptyPage = emptyPageClass?.new()?.also {
+                        val emptyPage = emptyPageV1Class?.new()?.also {
                             subjectControl?.callMethod("setEmptyPage", it)
                         }
                         emptyPage?.callMethod(
                             "setImageUrl",
                             "https://i0.hdslb.com/bfs/app-res/android/img_holder_forbid_style1.webp"
                         )
-                        textClass?.new()?.apply {
+                        textV1Class?.new()?.apply {
                             callMethod("setRaw", "评论区已由漫游屏蔽")
-                            textStyleClass?.new()?.apply {
+                            textStyleV1Class?.new()?.apply {
                                 callMethod("setFontSize", 14)
                                 callMethod("setTextDayColor", "#FF61666D")
                                 callMethod("setTextNightColor", "#FFA2A7AE")
@@ -203,8 +207,7 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                     param.result = null
                     return@hookBeforeMethod
                 }
-                if (!blockCommentGuide)
-                    return@hookBeforeMethod
+                if (!blockCommentGuide) return@hookBeforeMethod
                 param.args[1] = param.args[1].mossResponseHandlerProxy { reply ->
                     reply?.runCatchingOrNull {
                         callMethod("getSubjectControl")?.run {
@@ -214,8 +217,8 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                             callMethod("getEmptyPage")?.let { page ->
                                 page.callMethod("clearLeftButton")
                                 page.callMethod("clearRightButton")
-                                page.callMethodAs<List<Any>>("getTextsList")
-                                    .takeIf { it.size > 1 }?.let {
+                                page.callMethodAs<List<Any>>("getTextsList").takeIf { it.size > 1 }
+                                    ?.let {
                                         page.callMethod("clearTexts")
                                         page.callMethod("addTexts", it.first().apply {
                                             callMethod("setRaw", "还没有评论哦")
@@ -223,6 +226,88 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                     }
                             }
                         }
+                    }
+                }
+            }
+            "com.bapis.bilibili.main.community.reply.v2.ReplyMoss".from(mClassLoader)
+                ?.hookBeforeMethod(
+                    "subjectDescription",
+                    "com.bapis.bilibili.main.community.reply.v2.SubjectDescriptionReq",
+                    instance.mossResponseHandlerClass
+                ) { param ->
+                    val defaultText = textV2Class?.new()?.apply {
+                        val tipStr = if (hidden && blockVideoComment) {
+                            "评论区已由漫游屏蔽"
+                        } else {
+                            "还没有评论哦"
+                        }
+                        callMethod("setRaw", tipStr)
+                        textStyleV2Class?.new()?.apply {
+                            callMethod("setFontSize", 14)
+                            callMethod("setTextDayColor", "#FF61666D")
+                            callMethod("setTextNightColor", "#FFA2A7AE")
+                        }?.let {
+                            callMethod("setStyle", it)
+                        }
+                    } ?: return@hookBeforeMethod
+                    param.args[1] = param.args[1].mossResponseHandlerProxy { reply ->
+                        reply?.runCatchingOrNull {
+                            callMethod("getEmptyPage")?.run {
+                                callMethod("clearLeftButton")
+                                callMethod("clearRightButton")
+                                callMethod("ensureTextsIsMutable")
+                                callMethodAs<MutableList<Any>>("getTextsList").run {
+                                    clear()
+                                    add(defaultText)
+                                }
+                                if (!(hidden && blockVideoComment)) return@run
+                                callMethod(
+                                    "setImageUrl",
+                                    "https://i0.hdslb.com/bfs/app-res/android/img_holder_forbid_style1.webp"
+                                )
+                            }
+                        }
+                    }
+                }
+        }
+
+        if (!(hidden && (blockViewPageAds || removeHonor || blockVideoComment))) return
+        // 视频详情页荣誉卡片
+        fun Any.isHonor() = callMethodAs("hasHonor") && removeHonor
+
+        // 视频详情页活动卡片(含会员购等), 区分于视频下方推荐处的广告卡片
+        fun Any.isActivityEntranceModule() =
+            callMethodAs("hasActivityEntranceModule") && blockViewPageAds
+
+        // 视频详情页直播预约卡片
+        fun Any.isLiveOrder() = callMethodAs("hasLiveOrder") && blockLiveOrder
+
+        fun MutableList<Any>.filter() = removeAll {
+            it.isActivityEntranceModule() || it.isHonor() || it.isLiveOrder()
+        }
+
+        instance.viewUniteMossClass?.hookAfterMethod(
+            "view", instance.viewUniteReqClass
+        ) { param ->
+            if (instance.networkExceptionClass?.isInstance(param.throwable) == true) return@hookAfterMethod
+            param.result ?: return@hookAfterMethod
+
+            if (blockViewPageAds) {
+                param.result.callMethod("clearCm")
+            }
+
+            param.result.callMethod("getTab")?.run {
+                callMethod("ensureTabModuleIsMutable")
+                val tabModuleList = callMethodAs<MutableList<Any>>("getTabModuleList")
+                tabModuleList.removeAll {
+                    blockVideoComment && it.callMethodAs("hasReply")
+                }
+                if (!(blockViewPageAds || removeHonor)) return@run
+                tabModuleList.map {
+                    if (!it.callMethodAs<Boolean>("hasIntroduction")) return@map
+                    it.callMethodAs<Any>("getIntroduction").run {
+                        callMethod("ensureModulesIsMutable")
+                        callMethodAs<MutableList<Any>>("getModulesList").filter()
                     }
                 }
             }

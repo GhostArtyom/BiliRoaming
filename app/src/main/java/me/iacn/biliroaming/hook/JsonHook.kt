@@ -42,6 +42,8 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val searchRanksClass = "com.bilibili.search.api.SearchRanks".findClassOrNull(mClassLoader)
         val searchReferralClass =
             "com.bilibili.search.api.SearchReferral".findClassOrNull(mClassLoader)
+        val searchReferralV2Class =
+            "com.bilibili.search2.api.SearchReferral".findClassOrNull(mClassLoader)
         val followingcardSearchRanksClass =
             "com.bilibili.bplus.followingcard.net.entity.b".findClassOrNull(mClassLoader)
         val spaceClass =
@@ -345,7 +347,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                     result.getObjectFieldOrNullAs<MutableList<*>>("splashList")?.clear()
                     result.getObjectFieldOrNullAs<MutableList<*>>("strategyList")?.clear()
                 }
-                defaultWordClass, defaultKeywordClass, searchRanksClass, searchReferralClass, followingcardSearchRanksClass -> if (sPrefs.getBoolean(
+                defaultWordClass, defaultKeywordClass, searchRanksClass, searchReferralClass, searchReferralV2Class, followingcardSearchRanksClass -> if (sPrefs.getBoolean(
                         "purify_search",
                         false
                     ) &&
@@ -439,6 +441,9 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val searchRankClass = "com.bilibili.search.api.SearchRank".findClass(mClassLoader)
         val searchGuessClass =
             "com.bilibili.search.api.SearchReferral\$Guess".findClass(mClassLoader)
+        val searchRankV2Class = "com.bilibili.search2.api.SearchRank".from(mClassLoader) ?: searchRankClass
+        val searchGuessV2Class =
+            "com.bilibili.search2.api.SearchReferral\$Guess".from(mClassLoader) ?: searchGuessClass
         val categoryClass = "tv.danmaku.bili.category.CategoryMeta".findClass(mClassLoader)
 
         instance.fastJsonClass?.hookAfterMethod(
@@ -449,7 +454,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             @Suppress("UNCHECKED_CAST")
             val result = param.result as? MutableList<Any>
             when (param.args[1] as Class<*>) {
-                searchRankClass, searchGuessClass ->
+                searchRankClass, searchGuessClass, searchRankV2Class, searchGuessV2Class ->
                     if (sPrefs.getBoolean("purify_search", false) && sPrefs.getBoolean(
                             "hidden",
                             false
