@@ -31,6 +31,31 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val removeCmdDms = sPrefs.getBoolean("remove_video_cmd_dms", false)
         val removeUpVipLabel = sPrefs.getBoolean("remove_up_vip_label", false)
         val purifySearch = sPrefs.getBoolean("purify_search", false)
+        val searchFilterUid = run {
+            sPrefs.getStringSet("search_filter_keyword_uid", null)
+                ?.mapNotNull { it.toLongOrNull() }.orEmpty()
+        }
+        val searchFilterContents = run {
+            sPrefs.getStringSet("search_filter_keyword_content", null).orEmpty()
+        }
+        val searchFilterContentRegexes by lazy { searchFilterContents.map { it.toRegex() } }
+        val searchFilterContentRegexMode = sPrefs.getBoolean("search_filter_content_regex_mode", false)
+        val searchFilterUpNames = run {
+            sPrefs.getStringSet("search_filter_keyword_upname", null).orEmpty()
+        }
+        val commentFilterAtUid = run {
+            sPrefs.getStringSet("comment_filter_keyword_at_uid", null)
+                ?.mapNotNull { it.toLongOrNull() }.orEmpty()
+        }
+        val commentFilterContents = run {
+            sPrefs.getStringSet("comment_filter_keyword_content", null).orEmpty()
+        }
+        val commentFilterContentRegexes by lazy { commentFilterContents.map { it.toRegex() } }
+        val commentFilterContentRegexMode = sPrefs.getBoolean("comment_filter_content_regex_mode", false)
+        val commentFilterAtUpNames = run {
+            sPrefs.getStringSet("comment_filter_keyword_at_upname", null).orEmpty()
+        }
+        val commentFilterBlockAtComment = sPrefs.getBoolean("comment_filter_block_at_comment", false)
         val purifyCampus = sPrefs.getBoolean("purify_campus", false)
         val blockWordSearch = sPrefs.getBoolean("block_word_search", false)
         val blockModules = sPrefs.getBoolean("block_modules", false)
@@ -268,6 +293,56 @@ class ProtoBufHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                             }
                         }
                     }
+                }
+        }
+        val needSearchFilter = hidden and (searchFilterContents.isNotEmpty() or searchFilterUid.isNotEmpty() or searchFilterUpNames.isNotEmpty())
+        if (needSearchFilter) {
+            instance.searchAllResponseClass?.hookAfterMethod("getItemList") { p ->
+                val items = p.result as? List<Any?> ?: return@hookAfterMethod
+                p.result = items.filter { item ->
+                    val videoCard = item?.getObjectField("cardItem_") ?: return@filter true
+                    if (instance.searchVideoCardClass?.isInstance(videoCard) == false) return@filter true
+                    if (videoCard.getLongField("mid_") in searchFilterUid) return@filter false
+                    if (videoCard.getObjectFieldAs<String>("author_") in searchFilterUpNames) return@filter false
+                    if (searchFilterContentRegexMode) {
+                        if (searchFilterContentRegexes.any { it.matches(videoCard.getObjectFieldAs<String>("title_")) })
+                            return@filter false
+                    } else {
+                        if (searchFilterContents.any { videoCard.getObjectFieldAs<String>("title_").contains(it) }) return@filter false
+                    }
+                    true
+                }
+            }
+        }
+
+        val needCommentFilter = hidden and (commentFilterBlockAtComment or commentFilterContents.isNotEmpty() or commentFilterAtUid.isNotEmpty() or commentFilterAtUpNames.isNotEmpty())
+        if (needCommentFilter) {
+            val blockAtCommentSplitRegex = Regex("\\s+")
+            fun filterComment(replyInfo: Any?): Boolean {
+                if (replyInfo == null) return true
+                val content = replyInfo.getObjectField("content_")!!
+                val message = content.getObjectFieldAs<String>("message_")
+                if (commentFilterContents.isNotEmpty()) {
+                    if (commentFilterContentRegexMode) {
+                        if (commentFilterContentRegexes.any { it.matches(message) }) return false
+                    } else {
+                        if (commentFilterContents.any { message.contains(it) }) return false
+                    }
+                }
+                if (commentFilterBlockAtComment && message.trim().split(blockAtCommentSplitRegex).all { it.startsWith("@") }) return false
+                val atNameToMid = content.getObjectFieldAs<Map<String, Long>>("atNameToMid_")
+                if (commentFilterAtUpNames.isNotEmpty() && atNameToMid.keys.any { it in commentFilterAtUpNames }) return false
+                return !(commentFilterAtUid.isNotEmpty() && atNameToMid.values.any { it in commentFilterAtUid })
+            }
+            "com.bapis.bilibili.main.community.reply.v1.MainListReply".from(mClassLoader)
+                ?.hookAfterMethod("getRepliesList") { p ->
+                    val l = p.result as? List<*> ?: return@hookAfterMethod
+                    p.result = l.filter { filterComment(it) }
+                }
+            "com.bapis.bilibili.main.community.reply.v1.ReplyInfo".from(mClassLoader)
+                ?.hookAfterMethod("getRepliesList") { p ->
+                    val l = p.result as? List<*> ?: return@hookAfterMethod
+                    p.result = l.filter { filterComment(it) }
                 }
         }
 
