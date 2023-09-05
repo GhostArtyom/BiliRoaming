@@ -52,7 +52,7 @@ class PegasusHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     private val hideSuggestFollow = sPrefs.getBoolean("hide_suggest_follow_popular", false)
 
     private val filterMap = mapOf(
-        "advertisement" to listOf("ad"),
+        "advertisement" to listOf("ad", "cm", "cm_v2"),
         "article" to listOf("article"),
         "bangumi" to listOf("bangumi", "special", "pgc"),
         "game" to listOf("game"),
@@ -70,6 +70,8 @@ class PegasusHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     private val filter = filterSet.flatMap {
         filterMap[it].orEmpty()
     }
+
+    val handleCoverRatio = sPrefs.getString("pegasus_cover_ratio", "0")?.toFloat() ?: 0f
 
     companion object {
         private const val REASON_ID_TITLE = 1145140L
@@ -278,6 +280,13 @@ class PegasusHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         }
     }
 
+    private fun Any.customSmallCoverWhRatio() {
+        if (handleCoverRatio == 0f) return
+        runCatchingOrNull {
+            setFloatField("smallCoverWhRatio", handleCoverRatio)
+        }
+    }
+
     private fun isPromoteRelate(item: Any) = removeRelatePromote
             && (item.callMethod("getFromSourceType") == 2L ||
             item.callMethod("getGoto") == "cm")
@@ -452,7 +461,10 @@ class PegasusHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         ) { param ->
             param.result ?: return@hookAfterMethod
             val data = param.result.getObjectField("data")
-            data?.getObjectField("config")?.disableAutoRefresh()
+            data?.getObjectField("config")?.apply {
+                disableAutoRefresh()
+                customSmallCoverWhRatio()
+            }
             if (!hidden) return@hookAfterMethod
             data?.getObjectFieldAs<ArrayList<Any>>("items")?.run {
                 removeAll {
@@ -471,6 +483,7 @@ class PegasusHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             isPromoteRelate(it) || isNotAvRelate(it) || (applyToRelate && (isLowCountRelate(it)
                     || isDurationInvalidRelate(it) || isContainsBlockKwdRelate(it)))
         }
+
         fun MutableList<Any>.filterUnite() = removeAll {
             val allowTypeList = mutableListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
             allowTypeList.removeAll { digit ->
@@ -527,10 +540,7 @@ class PegasusHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             ) { param ->
                 param.result?.run {
                     callMethod("ensureRelatesIsMutable")
-                    callMethod("getRelatesList").run {
-                        callMethod("ensureCardsIsMutable")
-                        callMethodAs<MutableList<Any>>("getCardsList").filterUnite()
-                    }
+                    callMethodAs<MutableList<Any>>("getRelatesList").filterUnite()
                 }
             }
         }
