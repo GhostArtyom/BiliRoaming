@@ -41,7 +41,7 @@ class CommentImageHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         val path = File(
                             Environment.getExternalStoragePublicDirectory(
                                 Environment.DIRECTORY_PICTURES
-                            ), "bilibili"
+                            ), "bili"
                         ).also { it.mkdirs() }
                         put(MediaStore.MediaColumns.DATA, File(path, fullFilename).absolutePath)
                     }
