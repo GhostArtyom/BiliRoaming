@@ -113,6 +113,7 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         showing.not()
                     }
 
+                    var iconURL = "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/app/src/main/res/drawable/"
                     // 在底栏添加历史记录按钮
                     if (sPrefs.getBoolean("add_history", false)) {
                         val bottom = data?.getObjectFieldAs<MutableList<Any>>("bottom")
@@ -127,11 +128,11 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "历史记录")
                                 setObjectField(
                                     "icon",
-                                    me.iacn.biliroaming.R.drawable.ic_mine_history
+                                    iconURL + "ic_mine_history.png"
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    me.iacn.biliroaming.R.drawable.ic_mine_history
+                                    iconURL + "ic_mine_history.png"
                                 )
                                 setObjectField("uri", "bilibili://history")
                                 setObjectField("reportId", "历史记录")
@@ -158,11 +159,11 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "稍后再看")
                                 setObjectField(
                                     "icon",
-                                    me.iacn.biliroaming.R.drawable.ic_mine_watchlater
+                                    iconURL + "ic_mine_watchlater.png"
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    me.iacn.biliroaming.R.drawable.ic_mine_watchlater
+                                    iconURL + "ic_mine_watchlater.png"
                                 )
                                 setObjectField("uri", "bilibili://main/playset/watch-later")
                                 setObjectField("reportId", "稍后再看")
