@@ -34,6 +34,11 @@ message ResponseBody {
   optional Method string = 3;
 }
 
+message HttpUrl {
+  optional Class class = 1;
+  optional Method parse = 2;
+}
+
 message MediaType {
   optional Class class = 1;
   optional Method get = 2;
@@ -44,6 +49,7 @@ message OkHttp {
   optional Response response = 2;
   optional ResponseBody response_body = 3;
   optional MediaType mediaType = 4;
+  optional HttpUrl httpUrl = 5;
 }
 
 message FastJson {
@@ -156,6 +162,9 @@ message SignQuery {
 message Section {
   optional Class class = 1;
   optional Method like = 2;
+  optional Class view_holder = 3;
+  optional Method bind_view = 4;
+  optional Method get_root = 5;
 }
 
 message Drawer {
@@ -263,6 +272,46 @@ message Comment3Copy {
   optional int32 comment3ViewIndex = 3;
 }
 
+message Continuation {
+  optional Class class = 1;
+}
+
+message VipQualityTrialService {
+  optional Class class = 1;
+  optional Method canTrial = 2;
+}
+
+message LivePlayUrlSelectUtil {
+  optional Class class = 1;
+  optional Method buildSelectorData = 2;
+}
+
+message LiveRTCSourceServiceImpl {
+  optional Class class = 1;
+  optional Method switchAuto = 2;
+}
+
+message DefaultRequestIntercept {
+  optional Class class = 1;
+  optional Method intercept = 2;
+}
+
+message LiveQuality {
+  optional LivePlayUrlSelectUtil selectUtil = 1;
+  optional LiveRTCSourceServiceImpl sourceService = 2;
+  optional DefaultRequestIntercept interceptor = 3;
+}
+
+message PreBuiltConfig {
+  optional Class class = 1;
+  optional Method get = 2;
+}
+
+message DataSP {
+  optional Class class = 1;
+  optional Method get = 2;
+}
+
 message HookInfo {
   int64 last_update_time = 1;
   optional MapIds map_ids = 2;
@@ -304,7 +353,6 @@ message HookInfo {
   optional KanBan kan_ban = 67;
   optional ToastHelper toast_helper = 68;
   optional Class brotli_input_stream = 69;
-  optional Method can_try_watch_vip_quality = 70;
   repeated PlayerFullStoryWidget player_full_story_widget = 71;
   optional BiliCall bili_call = 72;
   optional Class comment_long_click_new = 73;
@@ -327,4 +375,10 @@ message HookInfo {
   optional Class play_speed_manager = 93;
   optional AutoSupremumQuality autoSupremumQuality = 94;
   optional QualityStrategyProvider qualityStrategyProvider = 95;
+  optional Continuation continuation = 96;
+  optional VipQualityTrialService vipQualityTrialService = 97;
+  optional LiveQuality liveQuality = 98;
+  optional PreBuiltConfig preBuiltConfig = 99;
+  optional DataSP dataSP = 100;
+  optional Class pegasus_parser = 101;
 }
