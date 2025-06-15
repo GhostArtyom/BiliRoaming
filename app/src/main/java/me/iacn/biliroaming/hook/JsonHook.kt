@@ -113,7 +113,6 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         showing.not()
                     }
 
-                    var url = "https://raw.githubusercontent.com/GhostArtyom/BiliRoaming/master/imgs/"
                     // 在底栏添加历史记录按钮
                     if (sPrefs.getBoolean("add_history", false)) {
                         val bottom = data?.getObjectFieldAs<MutableList<Any>>("bottom")
@@ -128,45 +127,14 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 setObjectField("name", "历史记录")
                                 setObjectField(
                                     "icon",
-                                    url + "ic_mine_history.png"
+                                    R.drawable.ic_mine_history
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    url + "ic_mine_history.png"
+                                    R.drawable.ic_mine_history
                                 )
                                 setObjectField("uri", "bilibili://history")
                                 setObjectField("reportId", "历史记录")
-                                val pos = 2
-                                setIntField("pos", pos)
-                                bottom.forEach {
-                                    it.setIntField("pos", it.getIntField("pos").let { p -> p + if (p >= pos) 1 else 0 } )
-                                }
-                                bottom.add(0, this)
-                            }
-                        }
-                    }
-                    // 在底栏添加我的收藏按钮
-                    if (sPrefs.getBoolean("add_favorites", false)) {
-                        val bottom = data?.getObjectFieldAs<MutableList<Any>>("bottom")
-                        val hasFavorites = bottom?.fold(false) { acc, it ->
-                            val uri = it.getObjectFieldAs<String?>("uri")
-                            acc || uri?.startsWith("bilibili://main/favorite/playlist") == true
-                        }
-                        // 不存在我的收藏按钮时才添加
-                        if (hasFavorites != null && !hasFavorites) {
-                            tabClass?.new()?.run {
-                                setObjectField("tabId", "222")
-                                setObjectField("name", "我的收藏")
-                                setObjectField(
-                                    "icon",
-                                    url + "ic_mine_favorite.png"
-                                )
-                                setObjectField(
-                                    "iconSelected",
-                                    url + "ic_mine_favorite.png"
-                                )
-                                setObjectField("uri", "bilibili://main/favorite/playlist")
-                                setObjectField("reportId", "我的收藏")
                                 val pos = 2
                                 setIntField("pos", pos)
                                 bottom.forEach {
@@ -186,15 +154,15 @@ class JsonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         // 不存在稍后再看按钮时才添加
                         if (hasWatchlater != null && !hasWatchlater) {
                             tabClass?.new()?.run {
-                                setObjectField("tabId", "333")
+                                setObjectField("tabId", "222")
                                 setObjectField("name", "稍后再看")
                                 setObjectField(
                                     "icon",
-                                    url + "ic_mine_watchlater.png"
+                                    R.drawable.ic_mine_watchlater
                                 )
                                 setObjectField(
                                     "iconSelected",
-                                    url + "ic_mine_watchlater.png"
+                                    R.drawable.ic_mine_watchlater
                                 )
                                 setObjectField("uri", "bilibili://main/playset/watch-later")
                                 setObjectField("reportId", "稍后再看")
