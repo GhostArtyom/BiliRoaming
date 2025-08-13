@@ -123,6 +123,8 @@ class XposedInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     startHook { SpeedHook(lpparam.classLoader) }
                     startHook { MultiWindowHook(lpparam.classLoader) }
                     startHook { LiveQualityHook(lpparam.classLoader) }
+                    startHook { StoryPlayerAdHook(lpparam.classLoader) }
+                    startHook { LongPressSpeed(lpparam.classLoader) }
                 }
 
                 lpparam.processName.endsWith(":web") -> {
@@ -131,6 +133,7 @@ class XposedInit : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     startHook { WebViewHook(lpparam.classLoader) }
                     startHook { ShareHook(lpparam.classLoader) }
                     startHook { DialogBlurBackgroundHook(lpparam.classLoader) }
+                    startHook { RewardAdHook(lpparam.classLoader) }
                 }
 
                 lpparam.processName.endsWith(":download") -> {
